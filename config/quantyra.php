@@ -191,9 +191,6 @@ MARKDOWN
         'label' => 'Contact',
         'heading' => 'Contact us',
         'description' => 'For inquiries, partnerships, or product questions, reach out to our team.',
-        'email' => 'hello@quantyra.io',
-        'sales_email' => 'sales@quantyra.io',
-        'support_email' => 'support@quantyra.io',
         'address' => [
             'line1' => 'Quantyra Labs LLC',
             'line2' => 'St. Petersburg, Florida',
@@ -202,6 +199,12 @@ MARKDOWN
         'form' => [
             'name_label' => 'Name',
             'email_label' => 'Email',
+            'department_label' => 'Department',
+            'departments' => [
+                ['value' => 'general', 'label' => 'General inquiries'],
+                ['value' => 'sales', 'label' => 'Sales'],
+                ['value' => 'support', 'label' => 'Support'],
+            ],
             'company_label' => 'Company (optional)',
             'message_label' => 'Message',
             'submit_label' => 'Send message',

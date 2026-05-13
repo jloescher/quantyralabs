@@ -40,9 +40,10 @@ All marketing/legal copy lives in **[config/quantyra.php](config/quantyra.php)**
 - `hero` + `home_products` — homepage
 - `about` — story, values, location
 - `legal` — Terms & Privacy markdown (preserved verbatim)
-- `contact` — emails, address, form labels
+- `contact` — address, form labels (including department options)
 - `footer` — columns, copyright line
 - `mail.contact_notification` — optional `CONTACT_NOTIFICATION_EMAIL` in `.env` for plain-text copies of submissions
+- **Cloudflare Turnstile** — optional bot protection on the contact form when **`TURNSTILE_SITE_KEY`** and **`TURNSTILE_SECRET_KEY`** are both set ([Turnstile docs](https://developers.cloudflare.com/turnstile/))
 
 ## Routes
 

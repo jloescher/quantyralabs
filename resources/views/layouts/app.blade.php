@@ -15,6 +15,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    @if (filled(config('services.turnstile.site_key')) && filled(config('services.turnstile.secret_key')))
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    @endif
+
     @fluxAppearance
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
@@ -153,6 +157,42 @@
 
     @fluxScripts
     @livewireScripts
+    <script>
+        (function () {
+            function wireFromTurnstileMount() {
+                const el = document.querySelector('[data-quantyra-turnstile-livewire-id]');
+                if (!el || !window.Livewire) {
+                    return null;
+                }
+
+                return Livewire.find(el.getAttribute('data-quantyra-turnstile-livewire-id'));
+            }
+
+            window.quantyraTurnstileSuccess = function (token) {
+                const w = wireFromTurnstileMount();
+                if (w) {
+                    w.set('turnstileToken', token);
+                }
+            };
+
+            window.quantyraTurnstileExpired = function () {
+                const w = wireFromTurnstileMount();
+                if (w) {
+                    w.set('turnstileToken', '');
+                }
+            };
+
+            window.quantyraTurnstileError = function () {
+                if (window.turnstile) {
+                    window.turnstile.reset();
+                }
+                const w = wireFromTurnstileMount();
+                if (w) {
+                    w.set('turnstileToken', '');
+                }
+            };
+        })();
+    </script>
     <script>
         (function () {
             const readScrollY = () =>

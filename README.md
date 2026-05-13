@@ -37,7 +37,7 @@ Serve with your web server pointed at the `public/` directory.
 
 ## Contact form
 
-Submissions are stored in the `contact_submissions` table. Optionally set `CONTACT_NOTIFICATION_EMAIL` in `.env` to receive a plain-text email copy when someone submits the form.
+Submissions are stored in the `contact_submissions` table (including **department**: general, sales, or support). Optionally set `CONTACT_NOTIFICATION_EMAIL` in `.env` to receive a plain-text email copy when someone submits the form.
 
 ## Tests & lint
 
