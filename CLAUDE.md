@@ -87,6 +87,14 @@ npm run dev
 - **Run**: `docker compose -f docker-compose.dev.yml up --build`
 - **`node_modules`**: Compose uses a **named volume** so installs match **Linux** (Rolldown/Vite native bindings). If you change JS dependencies, run `docker compose -f docker-compose.dev.yml run --rm app npm ci` (or `docker compose ... down -v` to reset the volume). Keep **`package-lock.json` committed and in sync** with `package.json` (`npm install` locally); `npm ci` in the container will fail if the lock is incomplete (for example missing transitive entries npm validates on Linux).
 
+### Staging / production (Coolify + VPS)
+
+- **Images**: [`Dockerfile.staging`](Dockerfile.staging) (Composer **with** dev packages) and [`Dockerfile.production`](Dockerfile.production) (Composer **`--no-dev`**). Both are multi-stage: Node builds Vite assets, PHP 8.5 FPM + nginx + Supervisor run the app; **port 8080** (set the same **exposed port** in Coolify’s network settings; the UI often defaults to 3000).
+- **Runtime**: [`docker/coolify/entrypoint.sh`](docker/coolify/entrypoint.sh) requires **`APP_KEY`**, fixes `storage` / `bootstrap/cache` permissions, runs `php artisan optimize`, then starts nginx and php-fpm. Health check hits Laravel’s **`/up`** route.
+- **Env samples**: [`.env.staging.example`](.env.staging.example) and [`.env.production.example`](.env.production.example) — copy to `.env.staging` / `.env.production` locally if you want file-based reference; **Coolify** normally injects the same variables via the dashboard. `.env.staging` and `.env.production` are gitignored.
+- **Migrations / queues**: Run **`php artisan migrate --force`** as a Coolify **post-deployment command** (or a one-off job), not inside the web image entrypoint. For **`database` queues**, add a second Coolify resource or command that runs **`php artisan queue:work --sleep=3 --tries=3`** against the same image and env.
+- **Build**: `docker build -f Dockerfile.production -t quantyralabs:prod .` (swap Dockerfile for staging). Dev compose assets stay out of the build context via [`.dockerignore`](.dockerignore).
+
 Quality:
 
 ```bash

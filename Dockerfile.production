@@ -1,0 +1,91 @@
+# Production image for Coolify / Docker on a VPS.
+# Build: docker build -f Dockerfile.production -t quantyralabs:prod .
+# Coolify: Build pack Dockerfile, expose container port 8080 (map in UI if Coolify defaults to 3000).
+
+FROM php:8.5-cli-bookworm AS vendor
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        libicu-dev \
+        libpq-dev \
+        libzip-dev \
+        unzip \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install -j"$(nproc)" intl pdo_pgsql zip \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+RUN composer install \
+        --no-dev \
+        --no-interaction \
+        --no-progress \
+        --no-scripts \
+        --prefer-dist
+
+COPY . .
+
+RUN composer install \
+        --no-dev \
+        --no-interaction \
+        --no-progress \
+        --prefer-dist \
+        --optimize-autoloader \
+    && php artisan package:discover --ansi || true \
+    && rm -rf /root/.composer/cache
+
+FROM node:22-bookworm AS assets
+
+WORKDIR /app
+
+COPY --from=vendor /app /app
+
+RUN npm ci --no-audit --no-fund \
+    && npm run build
+
+FROM php:8.5-fpm-bookworm AS app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        libicu-dev \
+        libpq-dev \
+        libzip-dev \
+        nginx \
+        supervisor \
+        tini \
+        unzip \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install -j"$(nproc)" intl pcntl pdo_pgsql zip \
+    && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && apt-get purge -y --auto-remove libicu-dev libpq-dev libzip-dev \
+    && apt-get install -y --no-install-recommends libicu72 libpq5 libzip4 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /var/www/html
+
+COPY --from=vendor /app /var/www/html
+COPY --from=assets /app/public/build ./public/build
+
+COPY docker/coolify/nginx.conf /etc/nginx/sites-available/laravel
+RUN rm -f /etc/nginx/sites-enabled/default \
+    && ln -sf /etc/nginx/sites-available/laravel /etc/nginx/sites-enabled/laravel.conf
+COPY docker/coolify/supervisord.conf /etc/supervisor/conf.d/laravel.conf
+COPY docker/coolify/entrypoint.sh /usr/local/bin/coolify-entrypoint.sh
+COPY docker/coolify/php-fpm-override.conf /usr/local/etc/php-fpm.d/zzz-coolify.conf
+RUN chmod +x /usr/local/bin/coolify-entrypoint.sh
+
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R ug+rwX storage bootstrap/cache
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD curl -fsS http://127.0.0.1:8080/up >/dev/null || exit 1
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/coolify-entrypoint.sh"]
