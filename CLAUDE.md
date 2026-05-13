@@ -36,7 +36,7 @@ routes/web.php                  # Volt::route(...) registrations
 All marketing/legal copy lives in **[config/quantyra.php](config/quantyra.php)**:
 
 - `site` — default title & meta description
-- `navigation` — logo, links (with named `route` keys), contact CTA
+- `navigation` — `logo` (alt text), `logo_src` (header image), links (with named `route` keys), contact CTA
 - `hero` + `home_products` — homepage
 - `about` — story, values, location
 - `legal` — Terms & Privacy markdown (preserved verbatim)

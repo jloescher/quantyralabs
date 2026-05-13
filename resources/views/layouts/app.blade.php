@@ -30,10 +30,15 @@
     <nav id="site-nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out-circ">
         <div class="w-full px-6 lg:px-12 py-4">
             <div class="flex items-center justify-between">
-                <a href="{{ route('home') }}" class="flex items-center">
-                    <span class="text-xl font-heading font-semibold tracking-tight text-white">
-                        {{ $nav['logo'] }}
-                    </span>
+                <a href="{{ route('home') }}" class="flex items-center shrink-0" wire:navigate>
+                    <img
+                        src="{{ $nav['logo_src'] }}"
+                        alt="{{ $nav['logo'] }}"
+                        class="h-8 w-auto max-w-[11rem] sm:max-w-[14rem] md:h-10 md:max-w-none object-contain object-left"
+                        width="124"
+                        height="32"
+                        decoding="async"
+                    />
                 </a>
 
                 <div class="hidden lg:flex items-center gap-8">

@@ -9,6 +9,7 @@ return [
 
     'navigation' => [
         'logo' => 'Quantyra Labs',
+        'logo_src' => '/logos/QuantyraLabs-Logo-Transparent.png',
         'links' => [
             ['label' => 'Home', 'href' => '/', 'route' => 'home'],
             ['label' => 'About', 'href' => '/about', 'route' => 'about'],
