@@ -40,7 +40,7 @@ All marketing/legal copy lives in **[config/quantyra.php](config/quantyra.php)**
 - `hero` + `home_products` — homepage
 - `about` — story, values, location
 - `legal` — Terms & Privacy markdown (preserved verbatim)
-- `contact` — emails, address, social, form labels
+- `contact` — emails, address, form labels
 - `footer` — columns, copyright line
 - `mail.contact_notification` — optional `CONTACT_NOTIFICATION_EMAIL` in `.env` for plain-text copies of submissions
 

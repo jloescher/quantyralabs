@@ -199,11 +199,6 @@ MARKDOWN
             'line2' => 'St. Petersburg, Florida',
             'line3' => 'United States',
         ],
-        'social' => [
-            ['platform' => 'Twitter', 'handle' => '@quantyralabs', 'href' => 'https://twitter.com/quantyralabs'],
-            ['platform' => 'LinkedIn', 'handle' => 'Quantyra Labs', 'href' => 'https://linkedin.com/company/quantyralabs'],
-            ['platform' => 'GitHub', 'handle' => 'quantyra', 'href' => 'https://github.com/quantyra'],
-        ],
         'form' => [
             'name_label' => 'Name',
             'email_label' => 'Email',

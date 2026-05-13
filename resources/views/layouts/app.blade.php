@@ -154,28 +154,38 @@
     @fluxScripts
     @livewireScripts
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const nav = document.getElementById('site-nav');
-            const menu = document.getElementById('mobile-menu');
-            const toggle = document.querySelector('[data-mobile-menu-toggle]');
-            const l1 = toggle?.querySelector('.mobile-menu-line-1');
-            const l2 = toggle?.querySelector('.mobile-menu-line-2');
-            const l3 = toggle?.querySelector('.mobile-menu-line-3');
-            let open = false;
+        (function () {
+            const readScrollY = () =>
+                window.scrollY ??
+                window.pageYOffset ??
+                document.documentElement.scrollTop ??
+                document.body.scrollTop ??
+                0;
 
             const setScrolled = () => {
-                if (window.scrollY > 50) {
-                    nav?.classList.add('is-scrolled');
-                } else {
-                    nav?.classList.remove('is-scrolled');
+                const nav = document.getElementById('site-nav');
+                if (!nav) {
+                    return;
                 }
+                nav.classList.toggle('is-scrolled', readScrollY() > 8);
             };
+
             window.addEventListener('scroll', setScrolled, { passive: true });
+            window.addEventListener('resize', setScrolled, { passive: true });
             setScrolled();
+
+            const menu = document.getElementById('mobile-menu');
+            const toggle = document.querySelector('[data-mobile-menu-toggle]');
+            let open = false;
 
             const setOpen = (value) => {
                 open = value;
-                if (!menu || !toggle) return;
+                if (!menu || !toggle) {
+                    return;
+                }
+                const l1 = toggle.querySelector('.mobile-menu-line-1');
+                const l2 = toggle.querySelector('.mobile-menu-line-2');
+                const l3 = toggle.querySelector('.mobile-menu-line-3');
                 menu.classList.toggle('opacity-0', !open);
                 menu.classList.toggle('invisible', !open);
                 menu.classList.toggle('pointer-events-none', !open);
@@ -190,8 +200,11 @@
 
             toggle?.addEventListener('click', () => setOpen(!open));
 
-            document.addEventListener('livewire:navigated', () => setOpen(false));
-        });
+            document.addEventListener('livewire:navigated', () => {
+                setOpen(false);
+                setScrolled();
+            });
+        })();
     </script>
 </body>
 </html>
