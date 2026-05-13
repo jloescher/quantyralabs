@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+    volumes:
+      - .:/var/www/html
+      # Host macOS node_modules breaks Vite/Rolldown native bindings inside Linux; keep deps in-container.
+      - quantyralabs_node_modules:/var/www/html/node_modules
+    ports:
+      - "8080:8080"
+    stdin_open: true
+    tty: true
+
+volumes:
+  quantyralabs_node_modules:

@@ -1,0 +1,58 @@
+# Development image: PHP 8.5, Node 22, Caddy (reverse proxy), cloudflared.
+# Run with docker compose and a bind mount; see docker-compose.dev.yml and CLAUDE.md.
+
+FROM php:8.5-cli-bookworm
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=node:22-bookworm /usr/local /usr/local
+
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		ca-certificates \
+		curl \
+		git \
+		gnupg \
+		libicu-dev \
+		libpq-dev \
+		libzip-dev \
+		tini \
+		unzip \
+		zip \
+	&& docker-php-ext-configure intl \
+	&& docker-php-ext-install -j"$(nproc)" intl pcntl pdo_pgsql zip \
+	&& rm -rf /var/lib/apt/lists/*
+
+ARG CADDY_VERSION=2.10.0
+RUN set -eux; \
+	arch="$(dpkg --print-architecture)"; \
+	case "$arch" in \
+		amd64) caddy_arch=amd64 ;; \
+		arm64) caddy_arch=arm64 ;; \
+		*) echo "unsupported dpkg arch: $arch" >&2; exit 1 ;; \
+	esac; \
+	curl -fsSL -o /tmp/caddy.tar.gz "https://github.com/caddyserver/caddy/releases/download/v${CADDY_VERSION}/caddy_${CADDY_VERSION}_linux_${caddy_arch}.tar.gz"; \
+	tar -xzf /tmp/caddy.tar.gz -C /tmp; \
+	mv "/tmp/caddy" /usr/local/bin/caddy; \
+	chmod +x /usr/local/bin/caddy; \
+	rm -f /tmp/caddy.tar.gz
+
+RUN set -eux; \
+	arch="$(dpkg --print-architecture)"; \
+	case "$arch" in \
+		amd64) cf_arch=amd64 ;; \
+		arm64) cf_arch=arm64 ;; \
+		*) echo "unsupported dpkg arch: $arch" >&2; exit 1 ;; \
+	esac; \
+	curl -fsSL -o /tmp/cloudflared.deb "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${cf_arch}.deb"; \
+	apt-get update && apt-get install -y --no-install-recommends /tmp/cloudflared.deb && rm -f /tmp/cloudflared.deb \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY docker/Caddyfile.dev /etc/caddy/Caddyfile.dev
+COPY docker/entrypoint-dev.sh /usr/local/bin/docker-entrypoint-dev.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-dev.sh
+
+WORKDIR /var/www/html
+
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/docker-entrypoint-dev.sh"]

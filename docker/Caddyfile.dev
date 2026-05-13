@@ -1,0 +1,27 @@
+{
+	admin off
+}
+
+:8080 {
+	handle /@vite/* {
+		reverse_proxy 127.0.0.1:5173
+	}
+	handle /@fs/* {
+		reverse_proxy 127.0.0.1:5173
+	}
+	handle /@id/* {
+		reverse_proxy 127.0.0.1:5173
+	}
+	handle /resources/* {
+		reverse_proxy 127.0.0.1:5173
+	}
+	handle /node_modules/* {
+		reverse_proxy 127.0.0.1:5173
+	}
+	handle /.vite/* {
+		reverse_proxy 127.0.0.1:5173
+	}
+	handle {
+		reverse_proxy 127.0.0.1:8000
+	}
+}
